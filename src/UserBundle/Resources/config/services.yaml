@@ -1,0 +1,19 @@
+services:
+  # default configuration for services in *this* file
+  _defaults:
+    autowire: true      # Automatically injects dependencies in your services.
+    autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+  App\UserBundle\Repository\:
+    resource: '../../Repository/*'
+    tags: ['doctrine.repository_service']
+
+  App\UserBundle\Controller\:
+    resource: '../../Controller/*'
+    tags: ['controller.service_arguments']
+
+  app.registration_listener:
+    class: App\UserBundle\EventListener\RegistrationListener
+    arguments: [ ]
+    tags:
+      - { name: kernel.event_subscriber }
