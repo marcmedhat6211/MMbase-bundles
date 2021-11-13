@@ -1,0 +1,51 @@
+{% extends 'adminTemplate/base.html.twig' %}
+
+{% block header %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('admin_index') }}">Administrators List</a></li>
+            <li class="breadcrumb-item active" aria-current="page">New Administrator</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form, {'attr':{'class':'forms-sample'}}) }}
+                <div class="form-group">
+                    {{ form_label(form.username) }}
+                    {{ form_widget(form.username) }}
+                    {{ form_errors(form.username) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.email) }}
+                    {{ form_widget(form.email) }}
+                    {{ form_errors(form.email) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.gender) }}
+                    {{ form_widget(form.gender) }}
+                    {{ form_errors(form.gender) }}
+                </div>
+                <div class="form-group">
+                    {{ form_widget(form.password) }}
+                    {{ form_errors(form.password) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.phone) }}
+                    {{ form_widget(form.phone) }}
+                    {{ form_errors(form.phone) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.enabled) }}
+                    {{ form_widget(form.enabled) }}
+                    {{ form_errors(form.enabled) }}
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+{% endblock %}
