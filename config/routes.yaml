@@ -4,3 +4,8 @@
 
 user_bundle:
   resource: "@UserBundle/Resources/config/routing.yaml"
+
+user_admin:
+  resource: "@UserBundle/Controller/Administration/"
+  type: annotation
+  prefix: /

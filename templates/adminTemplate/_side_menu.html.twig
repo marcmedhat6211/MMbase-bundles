@@ -1,0 +1,52 @@
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <div class="text-center sidebar-brand-wrapper d-flex align-items-center">
+        <a class="sidebar-brand brand-logo" href="{{ path('fe_home') }}"><img src="{{ asset('assets/images/logo.svg') }}" alt="logo" /></a>
+        <a class="sidebar-brand brand-logo-mini pl-4 pt-3" href="{{ path('fe_home') }}"><img src="{{ asset('assets/images/logo-mini.svg') }}" alt="logo" /></a>
+    </div>
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ path('dashboard') }}">
+                <i class="mdi mdi-home menu-icon"></i>
+                <span class="menu-title">Dashboard</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ path('admin_index') }}">
+                <i class="mdi mdi-account-key menu-icon"></i>
+                <span class="menu-title">Administrators</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <i class="mdi mdi-account menu-icon"></i>
+                <span class="menu-title">Users</span>
+            </a>
+        </li>
+        <li class="nav-item sidebar-actions">
+            <a href="{{ path('app_logout') }}" class="nav-link">
+                <div class="mt-4">
+                    <ul class="mt-4 pl-0">
+                        <li>
+                            Sign Out
+                        </li>
+                    </ul>
+                </div>
+            </a>
+        </li>
+    </ul>
+</nav>
+<div id="theme-settings" class="settings-panel">
+    <i class="settings-close mdi mdi-close"></i>
+    <p class="settings-heading">SIDEBAR SKINS</p>
+    <div class="sidebar-bg-options selected" id="sidebar-default-theme">
+        <div class="img-ss rounded-circle bg-light border mr-3"></div> Default
+    </div>
+    <div class="sidebar-bg-options" id="sidebar-dark-theme">
+        <div class="img-ss rounded-circle bg-dark border mr-3"></div> Dark
+    </div>
+    <p class="settings-heading mt-2">HEADER SKINS</p>
+    <div class="color-tiles mx-0 px-4">
+        <div class="tiles light"></div>
+        <div class="tiles dark"></div>
+    </div>
+</div>
