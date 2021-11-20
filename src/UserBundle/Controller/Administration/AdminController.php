@@ -8,6 +8,8 @@ use App\UserBundle\Form\AdministrationType;
 use App\UserBundle\Form\RegistrationType;
 use App\UserBundle\MMUserEvents;
 use App\UserBundle\Repository\UserRepository;
+use App\UserBundle\Service\UserService;
+use App\UserBundle\Util\PasswordUpdaterInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -26,11 +28,16 @@ class AdminController extends AbstractController
      */
     public function dashboard(): Response
     {
+        if(!$this->getUser() || !$this->getUser()->hasRole("ROLE_ADMIN")) {
+            $this->addFlash("danger", "You are not allowed to access this route");
+            return $this->redirectToRoute("fe_home");
+        }
+
         return $this->render('admin/dashboard.html.twig');
     }
 
     /**
-     * @Route("/administrators", name="admin_index", methods={"GET"})
+     * @Route("/administrator", name="admin_index", methods={"GET"})
      */
     public function index(Request $request, UserRepository $userRepository): Response
     {
@@ -41,28 +48,32 @@ class AdminController extends AbstractController
     }
 
     /**
-     * @Route("/administrators/new", name="admin_new", methods={"GET", "POST"})
+     * @Route("/administrator/new", name="admin_new", methods={"GET", "POST"})
      */
-    public function new(Request $request, EntityManagerInterface $em, EventDispatcherInterface $eventDispatcher, RequestStack $requestStack): Response
+    public function new(Request $request, UserService $userService): Response
     {
         $user = new User();
         $form = $this->createForm(AdministrationType::class, $user);
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid()) {
-            $user->addRole("ROLE_ADMIN");
-            $event = new RegistrationEvent($user, $requestStack);
-            $eventDispatcher->dispatch($event, MMUserEvents::REGISTRATION_COMPLETED);
-            if ($user->registrationValidation["error"]) {
-                $this->addFlash("danger", $user->registrationValidation["message"]);
-                return $this->redirect($this->generateUrl('app_registration'));
-            }
-
-            $em->persist($user);
-            $em->flush();
-
-            $this->addFlash("success", "User created successfully");
-            return $this->redirectToRoute("admin_index");
+//            $user->addRole("ROLE_ADMIN");
+//            $formData = $form->getData();
+//            $user->setPlainPassword($formData->getPassword());
+//            $passwordUpdater->hashPassword($user);
+//            $event = new RegistrationEvent($user, $requestStack);
+//            $eventDispatcher->dispatch($event, MMUserEvents::REGISTRATION_COMPLETED);
+//            if ($user->registrationValidation["error"]) {
+//                $this->addFlash("danger", $user->registrationValidation["message"]);
+//                return $this->redirect($this->generateUrl('app_registration'));
+//            }
+//
+//            $em->persist($user);
+//            $em->flush();
+//
+//            $this->addFlash("success", "User created successfully");
+//            return $this->redirectToRoute("admin_index");
+            return $userService->createUser($user, $form, "ROLE_ADMIN", "admin_new", "admin_index");
         }
 
         return $this->render('admin/admin/new.html.twig', [

@@ -7,6 +7,7 @@ use App\UserBundle\Event\RegistrationEvent;
 use App\UserBundle\Form\RegistrationType;
 use App\UserBundle\MMUserEvents;
 use App\UserBundle\Security\CustomAuthenticator;
+use App\UserBundle\Util\PasswordUpdaterInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -26,14 +27,14 @@ class RegistrationController extends AbstractController
     public function register(
         Request                      $request,
         RequestStack                 $requestStack,
-        UserPasswordEncoderInterface $passwordEncoder,
+        PasswordUpdaterInterface     $passwordUpdater,
         EventDispatcherInterface     $eventDispatcher,
         EntityManagerInterface       $em,
         CustomAuthenticator          $authenticator,
         GuardAuthenticatorHandler    $guard
     ): Response
     {
-        //if user is already logged in just redirect him to home and tell him that he needs to logout first
+        //if user is already logged in just redirect him to home and tell him that he needs to log out first
         if ($this->getUser()) {
             $this->addFlash('warning', 'You are already logged in as a user, please logout if you want to create another account with different credentials');
             return $this->redirectToRoute('fe_home');
@@ -44,10 +45,10 @@ class RegistrationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $user->addRole("ROLE_USER");
             $formData = $form->getData();
-            $user->setPassword(
-                $passwordEncoder->encodePassword($user, $formData->getPassword())
-            );
+            $user->setPlainPassword($formData->getPassword());
+            $passwordUpdater->hashPassword($user);
 
             //dispatching an event that the registration is completed
             $event = new RegistrationEvent($user, $requestStack);
