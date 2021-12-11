@@ -12,40 +12,6 @@
 
 {% block content %}
 
-    <div class="card">
-        <div class="card-body">
-            {{ form_start(form, {'attr':{'class':'forms-sample'}}) }}
-                <div class="form-group">
-                    {{ form_label(form.username) }}
-                    {{ form_widget(form.username) }}
-                    {{ form_errors(form.username) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.email) }}
-                    {{ form_widget(form.email) }}
-                    {{ form_errors(form.email) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.gender) }}
-                    {{ form_widget(form.gender) }}
-                    {{ form_errors(form.gender) }}
-                </div>
-                <div class="form-group">
-                    {{ form_widget(form.password) }}
-                    {{ form_errors(form.password) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.phone) }}
-                    {{ form_widget(form.phone) }}
-                    {{ form_errors(form.phone) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.enabled) }}
-                    {{ form_widget(form.enabled) }}
-                    {{ form_errors(form.enabled) }}
-                </div>
-            {{ form_end(form) }}
-        </div>
-    </div>
+    {% include 'admin/admin/_form.html.twig' %}
 
 {% endblock %}

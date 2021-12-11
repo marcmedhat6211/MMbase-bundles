@@ -7,10 +7,10 @@
         <ul class="navbar-nav navbar-nav-right ml-lg-auto">
             <li class="nav-item nav-profile dropdown border-0">
                 <a class="nav-link dropdown-toggle" id="profileDropdown" href="#" data-toggle="dropdown">
-                    <span class="profile-name">Henry Klein</span>
+                    <span class="profile-name">{{ app.user.username }}</span>
                 </a>
                 <div class="dropdown-menu navbar-dropdown w-100" aria-labelledby="profileDropdown">
-                    <a class="dropdown-item" href="#">
+                    <a class="dropdown-item" href="{{ path('admin_edit', {'id': app.user.id}) }}">
                         <i class="mdi mdi-pencil mr-2 text-primary"></i>
                         Edit
                     </a>

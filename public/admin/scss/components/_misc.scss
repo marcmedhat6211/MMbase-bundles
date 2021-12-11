@@ -13,6 +13,7 @@ html {
 
 .container-scroller {
   overflow: hidden;
+  min-height: 100vh;
 }
 
 pre {

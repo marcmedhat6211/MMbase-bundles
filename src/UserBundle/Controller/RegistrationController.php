@@ -3,11 +3,9 @@
 namespace App\UserBundle\Controller;
 
 use App\UserBundle\Entity\User;
-use App\UserBundle\Event\RegistrationEvent;
 use App\UserBundle\Form\RegistrationType;
-use App\UserBundle\MMUserEvents;
 use App\UserBundle\Security\CustomAuthenticator;
-use App\UserBundle\Util\PasswordUpdaterInterface;
+use App\UserBundle\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -15,24 +13,32 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 
 class RegistrationController extends AbstractController
 {
+    private RequestStack $requestStack;
+    private EntityManagerInterface $em;
+    private CustomAuthenticator $authenticator;
+    private GuardAuthenticatorHandler $guard;
+
+    public function __construct(
+        RequestStack              $requestStack,
+        EntityManagerInterface    $em,
+        CustomAuthenticator       $authenticator,
+        GuardAuthenticatorHandler $guard
+    )
+    {
+        $this->requestStack = $requestStack;
+        $this->em = $em;
+        $this->authenticator = $authenticator;
+        $this->guard = $guard;
+    }
 
     /**
      * @Route("/register", name="app_registration")
      */
-    public function register(
-        Request                      $request,
-        RequestStack                 $requestStack,
-        PasswordUpdaterInterface     $passwordUpdater,
-        EventDispatcherInterface     $eventDispatcher,
-        EntityManagerInterface       $em,
-        CustomAuthenticator          $authenticator,
-        GuardAuthenticatorHandler    $guard
-    ): Response
+    public function register(Request $request, UserService $userService): Response
     {
         //if user is already logged in just redirect him to home and tell him that he needs to log out first
         if ($this->getUser()) {
@@ -46,25 +52,18 @@ class RegistrationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $user->addRole("ROLE_USER");
-            $formData = $form->getData();
-            $user->setPlainPassword($formData->getPassword());
-            $passwordUpdater->hashPassword($user);
+            $userService->setUserPassword($form, $user);
 
-            //dispatching an event that the registration is completed
-            $event = new RegistrationEvent($user, $requestStack);
-            $eventDispatcher->dispatch($event, MMUserEvents::REGISTRATION_COMPLETED);
-            if ($user->registrationValidation["error"]) {
-                $this->addFlash("danger", $user->registrationValidation["message"]);
-                return $this->redirect($this->generateUrl('app_registration'));
+            if (!$userService->areCanonicalsValid($user)) {
+                return $this->redirectToRoute("app_registration");
             }
 
-            $em->persist($user);
-            $em->flush();
+            // persisting and adding the user to the database
+            $this->em->persist($user);
+            $this->em->flush();
 
-            $this->addFlash('success', 'Signed Up successfully');
-
-            //Login after Registration is complete
-            return $guard->authenticateUserAndHandleSuccess($user, $request, $authenticator, 'main');
+            $this->addFlash("success", "Signed up successfully");
+            return $this->guard->authenticateUserAndHandleSuccess($user, $this->requestStack->getCurrentRequest(), $this->authenticator, 'main');
         }
 
         return $this->render('user/registration/index.html.twig', [

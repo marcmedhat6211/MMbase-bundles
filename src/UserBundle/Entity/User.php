@@ -45,7 +45,7 @@ class User extends BaseUser
      */
     private $facebookId;
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
