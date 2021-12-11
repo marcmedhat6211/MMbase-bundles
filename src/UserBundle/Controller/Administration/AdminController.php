@@ -72,7 +72,7 @@ class AdminController extends AbstractController
             $this->em->flush();
 
             $this->addFlash("success", "Administrator created successfully");
-            $this->redirectToRoute("admin_index");
+            return $this->redirectToRoute("admin_index");
         }
 
         return $this->render('admin/admin/new.html.twig', [
