@@ -3,7 +3,9 @@
 namespace App\UserBundle\Repository;
 
 use App\UserBundle\Entity\User;
+use App\Utils\Validate;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
@@ -41,7 +43,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      *
      * @return array
      */
-    public function findByRole($role)
+    public function findByRole(string $role): array
     {
         $statement = $this->createQueryBuilder("u")
             ->select('u')
@@ -51,32 +53,92 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $statement->getQuery()->getResult();
     }
 
-    // /**
-    //  * @return User[] Returns an array of User objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    private function getStatement()
     {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('u.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+        return $this->createQueryBuilder('u');
     }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?User
+    private function filterOrder(QueryBuilder $statement, \stdClass $search)
     {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        $sortSQL = [
+            "u.id",
+        ];
+
+        if (isset($search->ordr) and Validate::notNull($search->ordr)) {
+            $dir = $search->ordr['dir'];
+            $columnNumber = $search->ordr['column'];
+            if (isset($columnNumber) and array_key_exists($columnNumber, $sortSQL)) {
+                $statement->addOrderBy($sortSQL[$columnNumber], $dir);
+            }
+        } else {
+            $statement->addOrderBy($sortSQL[0]);
+        }
     }
-    */
+
+    private function filterWhereClause(QueryBuilder $statement, \stdClass $search)
+    {
+        if (isset($search->string) and Validate::notNull($search->string)) {
+            $statement->andWhere('u.id LIKE :searchTerm '
+                .'OR u.title LIKE :searchTerm '
+            );
+            $statement->setParameter('searchTerm', '%'.trim($search->string).'%');
+        }
+
+        if (isset($search->id) and $search->id > 0) {
+            $statement->andWhere('u.id = :id');
+            $statement->setParameter('id', $search->id);
+        }
+
+        if (isset($search->ids) and is_array($search->ids) and count($search->ids) > 0) {
+            $statement->andWhere('u.id IN (:ids)');
+            $statement->setParameter('ids', $search->ids);
+        }
+
+        //@TODO: Add deleted field in users table
+        if (isset($search->deleted) and in_array($search->deleted, array(0, 1))) {
+            if ($search->deleted == 1) {
+                $statement->andWhere('u.deleted IS NOT NULL');
+            } else {
+                $statement->andWhere('u.deleted IS NULL');
+            }
+        }
+    }
+
+    private function filterPagination(QueryBuilder $statement, $startLimit = null, $endLimit = null)
+    {
+        if ($startLimit === null or $endLimit === null) {
+            return false;
+        }
+        $statement->setFirstResult($startLimit)
+            ->setMaxResults($endLimit);
+    }
+
+    private function filterCount(QueryBuilder $statement)
+    {
+        $statement->select("COUNT(DISTINCT u.id)");
+        $statement->setMaxResults(1);
+
+        $count = $statement->getQuery()->getOneOrNullResult();
+        if (is_array($count) and count($count) > 0) {
+            return (int)reset($count);
+        }
+
+        return 0;
+    }
+
+    public function filter($search, $count = false, $startLimit = null, $endLimit = null)
+    {
+        $statement = $this->getStatement();
+        $this->filterWhereClause($statement, $search);
+
+        if ($count == true) {
+            return $this->filterCount($statement);
+        }
+
+        $statement->groupBy('u.id');
+        $this->filterPagination($statement, $startLimit, $endLimit);
+        $this->filterOrder($statement, $search);
+
+        return $statement->getQuery()->execute();
+    }
 }

@@ -23,6 +23,8 @@ security:
                     - App\UserBundle\Security\CustomAuthenticator
             logout:
                 path: app_logout
+            pattern: ^/
+            user_checker: App\UserBundle\Security\UserChecker
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#firewalls-authentication

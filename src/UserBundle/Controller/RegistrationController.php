@@ -4,6 +4,7 @@ namespace App\UserBundle\Controller;
 
 use App\UserBundle\Entity\User;
 use App\UserBundle\Form\RegistrationType;
+use App\UserBundle\Form\UserType;
 use App\UserBundle\Security\CustomAuthenticator;
 use App\UserBundle\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -47,7 +48,7 @@ class RegistrationController extends AbstractController
         }
 
         $user = new User();
-        $form = $this->createForm(RegistrationType::class, $user);
+        $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

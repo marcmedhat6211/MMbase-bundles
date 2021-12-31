@@ -4,6 +4,7 @@ namespace App\UserBundle\Controller\Administration;
 
 use App\UserBundle\Entity\User;
 use App\UserBundle\Form\AdministrationType;
+use App\UserBundle\Form\UserType;
 use App\UserBundle\Repository\UserRepository;
 use App\UserBundle\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,16 +19,12 @@ use Symfony\Component\Routing\RouterInterface;
  */
 class AdminController extends AbstractController
 {
-
-    private RouterInterface $router;
     private EntityManagerInterface $em;
 
     public function __construct(
-        RouterInterface          $router,
         EntityManagerInterface $em
     )
     {
-        $this->router = $router;
         $this->em = $em;
     }
 
@@ -57,7 +54,7 @@ class AdminController extends AbstractController
     public function new(Request $request, UserService $userService): Response
     {
         $user = new User();
-        $form = $this->createForm(AdministrationType::class, $user);
+        $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
