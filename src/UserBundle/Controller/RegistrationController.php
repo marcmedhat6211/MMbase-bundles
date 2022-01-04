@@ -3,7 +3,6 @@
 namespace App\UserBundle\Controller;
 
 use App\UserBundle\Entity\User;
-use App\UserBundle\Form\RegistrationType;
 use App\UserBundle\Form\UserType;
 use App\UserBundle\Security\CustomAuthenticator;
 use App\UserBundle\Service\UserService;
@@ -49,10 +48,10 @@ class RegistrationController extends AbstractController
 
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
+        $form->remove("enabled");
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user->addRole("ROLE_USER");
             $userService->setUserPassword($form, $user);
 
             if (!$userService->areCanonicalsValid($user)) {

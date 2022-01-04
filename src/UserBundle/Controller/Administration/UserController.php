@@ -13,9 +13,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/administrator")
+ * @Route("/user")
  */
-class AdminController extends AbstractController
+class UserController extends AbstractController
 {
     private EntityManagerInterface $em;
 
@@ -27,19 +27,29 @@ class AdminController extends AbstractController
     }
 
     /**
-     * @Route("/", name="admin_index", methods={"GET"})
+     * @Route("/", name="user_index", methods={"GET"})
      */
     public function index(UserRepository $userRepository): Response
     {
-        $admins = $userRepository->findByRole(User::ROLE_ADMIN);
+        //@TODO: fix this and get users by role
+        $search = new \stdClass();
+        $search->deleted = 0;
+        $allUsers = $userRepository->filter($search);
+        $users = [];
+        foreach ($allUsers as $user) {
+            $userRoles = $user->getRoles();
+            if (in_array(User::ROLE_DEFAULT, $userRoles) && !in_array(User::ROLE_ADMIN, $userRoles)) {
+                $users[] = $user;
+            }
+        }
 
-        return $this->render('admin/admin/index.html.twig', [
-            "admins" => $admins,
+        return $this->render('admin/user/index.html.twig', [
+            "users" => $users,
         ]);
     }
 
     /**
-     * @Route("/new", name="admin_new", methods={"GET", "POST"})
+     * @Route("/new", name="user_new", methods={"GET", "POST"})
      */
     public function new(Request $request, UserService $userService): Response
     {
@@ -48,27 +58,26 @@ class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user->addRole(User::ROLE_ADMIN);
             $userService->setUserPassword($form, $user);
 
             if (!$userService->areCanonicalsValid($user)) {
-                return $this->redirectToRoute("admin_new");
+                return $this->redirectToRoute("user_new");
             }
 
             $this->em->persist($user);
             $this->em->flush();
 
-            $this->addFlash("success", "Administrator created successfully");
-            return $this->redirectToRoute("admin_index");
+            $this->addFlash("success", "User created successfully");
+            return $this->redirectToRoute("user_index");
         }
 
-        return $this->render('admin/admin/new.html.twig', [
+        return $this->render('admin/user/new.html.twig', [
             'form' => $form->createView(),
         ]);
     }
 
     /**
-     * @Route("/{id}/edit", name="admin_edit", methods={"GET", "POST"})
+     * @Route("/{id}/edit", name="user_edit", methods={"GET", "POST"})
      */
     public function edit(Request $request, UserService $userService, User $user): Response
     {
@@ -79,24 +88,24 @@ class AdminController extends AbstractController
             $userService->setUserPassword($form, $user);
 
             if (!$userService->areCanonicalsValid($user)) {
-                return $this->redirectToRoute("admin_edit", ["id" => $user->getId()]);
+                return $this->redirectToRoute("user_edit", ["id" => $user->getId()]);
             }
 
             $this->em->persist($user);
             $this->em->flush();
 
-            $this->addFlash("success", "Administrator updated successfully");
-            return $this->redirectToRoute("admin_index");
+            $this->addFlash("success", "User updated successfully");
+            return $this->redirectToRoute("user_index");
         }
 
-        return $this->render('admin/admin/edit.html.twig', [
+        return $this->render('admin/user/edit.html.twig', [
             'form' => $form->createView(),
-            'admin' => $user
+            'user' => $user
         ]);
     }
 
     /**
-     * @Route("/{id}/delete", name="admin_delete", methods={"GET", "POST"})
+     * @Route("/{id}/delete", name="user_delete", methods={"GET", "POST"})
      */
     public function delete(User $user): Response
     {
@@ -105,7 +114,7 @@ class AdminController extends AbstractController
         $this->em->persist($user);
         $this->em->flush();
 
-        $this->addFlash("success", "Admin Deleted Successfully");
-        return $this->redirectToRoute("admin_index");
+        $this->addFlash("success", "User Deleted Successfully");
+        return $this->redirectToRoute("user_index");
     }
 }

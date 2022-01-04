@@ -1,0 +1,17 @@
+{% extends 'adminTemplate/base.html.twig' %}
+
+{% block header %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('user_index') }}">Users List</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit {{ user.username }}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+
+    {% include 'admin/user/_form.html.twig' %}
+
+{% endblock %}

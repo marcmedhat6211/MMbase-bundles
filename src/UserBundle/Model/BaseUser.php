@@ -2,12 +2,15 @@
 
 namespace App\UserBundle\Model;
 
+use App\Utils\Model\VirtualDeleteTrait;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 abstract class BaseUser implements MMUserInterface
 {
+    use VirtualDeleteTrait;
+
     /**
      * @ORM\Column(name="username", type="string", length=120)
      * @Assert\NotBlank
@@ -117,7 +120,7 @@ abstract class BaseUser implements MMUserInterface
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+        $roles[] = self::ROLE_DEFAULT;
 
         return array_unique($roles);
     }

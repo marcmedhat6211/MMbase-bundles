@@ -48,8 +48,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $statement = $this->createQueryBuilder("u")
             ->select('u')
             ->where('u.roles LIKE :roles')
+            ->andWhere('u.deleted IS NULL')
             ->setParameter('roles', '%"'.$role.'"%');
-
         return $statement->getQuery()->getResult();
     }
 
@@ -62,6 +62,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         $sortSQL = [
             "u.id",
+            "u.username",
+            "u.email",
+            "u.phone",
+            "u.status",
+            "u.lastLogin",
         ];
 
         if (isset($search->ordr) and Validate::notNull($search->ordr)) {
@@ -79,7 +84,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         if (isset($search->string) and Validate::notNull($search->string)) {
             $statement->andWhere('u.id LIKE :searchTerm '
-                .'OR u.title LIKE :searchTerm '
+                .'OR u.username LIKE :searchTerm '
+                .'OR u.email LIKE :searchTerm '
             );
             $statement->setParameter('searchTerm', '%'.trim($search->string).'%');
         }
@@ -94,7 +100,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             $statement->setParameter('ids', $search->ids);
         }
 
-        //@TODO: Add deleted field in users table
         if (isset($search->deleted) and in_array($search->deleted, array(0, 1))) {
             if ($search->deleted == 1) {
                 $statement->andWhere('u.deleted IS NOT NULL');

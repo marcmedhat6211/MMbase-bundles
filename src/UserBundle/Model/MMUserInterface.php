@@ -7,6 +7,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 interface MMUserInterface extends UserInterface
 {
     const ROLE_DEFAULT = 'ROLE_USER';
+    const ROLE_ADMIN = 'ROLE_ADMIN';
     const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
 
     /**

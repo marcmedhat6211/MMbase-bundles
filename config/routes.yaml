@@ -8,4 +8,4 @@ user_bundle:
 user_admin:
   resource: "@UserBundle/Controller/Administration/"
   type: annotation
-  prefix: /
+  prefix: /admin
