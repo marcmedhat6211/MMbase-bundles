@@ -7,6 +7,7 @@ use App\UserBundle\Form\UserType;
 use App\UserBundle\Repository\UserRepository;
 use App\UserBundle\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,12 +30,17 @@ class AdminController extends AbstractController
     /**
      * @Route("/", name="admin_index", methods={"GET"})
      */
-    public function index(UserRepository $userRepository): Response
+    public function index(
+        UserRepository $userRepository,
+        PaginatorInterface $paginator,
+        Request $request
+    ): Response
     {
         $admins = $userRepository->findByRole(User::ROLE_ADMIN);
+        $pagination = $paginator->paginate($admins, $request->query->getInt('page', 1), 10);
 
         return $this->render('admin/admin/index.html.twig', [
-            "admins" => $admins,
+            "pagination" => $pagination
         ]);
     }
 

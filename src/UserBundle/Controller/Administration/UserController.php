@@ -7,6 +7,7 @@ use App\UserBundle\Form\UserType;
 use App\UserBundle\Repository\UserRepository;
 use App\UserBundle\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,7 +30,11 @@ class UserController extends AbstractController
     /**
      * @Route("/", name="user_index", methods={"GET"})
      */
-    public function index(UserRepository $userRepository): Response
+    public function index(
+        UserRepository $userRepository,
+        PaginatorInterface $paginator,
+        Request $request
+    ): Response
     {
         //@TODO: fix this and get users by role
         $search = new \stdClass();
@@ -43,8 +48,10 @@ class UserController extends AbstractController
             }
         }
 
+        $pagination = $paginator->paginate($users, $request->query->getInt('page', 1), 10);
+
         return $this->render('admin/user/index.html.twig', [
-            "users" => $users,
+            "pagination" => $pagination,
         ]);
     }
 
